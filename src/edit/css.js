@@ -17,28 +17,28 @@ insertCSS(`
   margin: 0;
 }
 
-.ProseMirror-content ul, .ProseMirror-content ol {
-  padding-left: 2em;
-}
+// .ProseMirror-content ul, .ProseMirror-content ol {
+//   padding-left: 2em;
+// }
 
-.ProseMirror-content blockquote {
-  padding-left: 1em;
-  border-left: 3px solid #eee;
-  margin-left: 0; margin-right: 0;
-}
+// .ProseMirror-content blockquote {
+//   padding-left: 1em;
+//   border-left: 3px solid #eee;
+//   margin-left: 0; margin-right: 0;
+// }
 
 .ProseMirror-content pre {
   white-space: pre-wrap;
 }
 
-.ProseMirror-content p:first-child,
-.ProseMirror-content h1:first-child,
-.ProseMirror-content h2:first-child,
-.ProseMirror-content h3:first-child,
-.ProseMirror-content h4:first-child,
-.ProseMirror-content h5:first-child,
-.ProseMirror-content h6:first-child {
-  margin-top: .3em;
-}
+// .ProseMirror-content p:first-child,
+// .ProseMirror-content h1:first-child,
+// .ProseMirror-content h2:first-child,
+// .ProseMirror-content h3:first-child,
+// .ProseMirror-content h4:first-child,
+// .ProseMirror-content h5:first-child,
+// .ProseMirror-content h6:first-child {
+//   margin-top: .3em;
+// }
 
 `)
