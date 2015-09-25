@@ -2,6 +2,18 @@ import insertCSS from "insert-css"
 
 insertCSS(`
 
+.ProseMirror-icon-heading:after {
+  font-family: ProseMirror-icons;
+  content: "\ue60c";
+}
+.ProseMirror-icon-paragraph:after {
+  font-family: ProseMirror-icons;
+  content: "\ue60c";
+}
+.ProseMirror-icon-codeblock:after {
+  font-family: ProseMirror-icons;
+  content: "\ue60c";
+}
 .ProseMirror-icon-lift:after {
   font-family: ProseMirror-icons;
   content: "\ue60c";

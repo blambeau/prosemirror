@@ -121,6 +121,56 @@ export class InlineStyleItem extends IconItem {
   }
 }
 
+export class SetBlockTypeItem extends IconItem {
+  constructor(icon, title, type) {
+    super(icon, title)
+    this.type = type
+    this.node = new Node(type)
+  }
+  active(pm) {
+    let sel = pm.selection
+    return Pos.samePath(sel.head.path, sel.anchor.path) &&
+      pm.doc.path(sel.head.path).type.name == this.type
+  }
+  apply(pm) {
+    let sel = pm.selection
+    pm.apply(pm.tr.setBlockType(sel.from, sel.to, this.node))
+  }
+}
+
+export class SetHeadingItem extends IconItem {
+  constructor() {
+    super("heading", "Set next head level")
+  }
+  isHeadingSel(pm, sel) {
+    let node = pm.doc.path(sel.head.path)
+    return node.type.name == "heading"
+  }
+  active(pm) {
+    let sel = pm.selection
+    return Pos.samePath(sel.head.path, sel.anchor.path) && this.isHeadingSel(pm, sel)
+  }
+  apply(pm) {
+    let sel = pm.selection, node = pm.doc.path(sel.head.path)
+    let level = this.isHeadingSel(pm, sel) ? node.attrs.level%6 + 1 : 1
+    pm.apply(pm.tr.setBlockType(sel.from, sel.to, new Node("heading", { level: level })))
+  }
+  render(menu) {
+    let sel = menu.pm.selection, node, level
+    node = menu.pm.doc.path(sel.head.path)
+    level = (node.attrs.level || 1).toString()
+    let iconClass = "ProseMirror-menuicon"
+    if (this.active(menu.pm)) iconClass += " ProseMirror-menuicon-active"
+    let dom = elt("div", {class: iconClass, title: this.title},
+                  elt("span", {class: "ProseMirror-menuicon ProseMirror-icon-heading" }, level))
+    dom.addEventListener("mousedown", e => {
+      e.preventDefault(); e.stopPropagation()
+      menu.run(this.apply(menu.pm))
+    })
+    return dom
+  }
+}
+
 export class ImageItem extends IconItem {
   constructor() {
     super("image", "Insert image")
@@ -284,17 +334,22 @@ function showBlockTypeMenu(pm, dom) {
 
 registerItem("inline", new InlineStyleItem("strong", "Strong text", style.strong))
 registerItem("inline", new InlineStyleItem("em", "Emphasized text", style.em))
-registerItem("inline", new InlineStyleItem("link", "Hyperlink", "link", linkDialog))
 registerItem("inline", new InlineStyleItem("code", "Code font", style.code))
+registerItem("inline", new InlineStyleItem("link", "Hyperlink", "link", linkDialog))
 registerItem("inline", new ImageItem("image"))
 
+registerItem("block", new SetHeadingItem)
+registerItem("block", new SetBlockTypeItem("paragraph", "Normal", "paragraph"))
+registerItem("block", new SetBlockTypeItem("codeblock", "Code", "code_block"))
 registerItem("block", new BlockTypeItem)
-registerItem("block", new LiftItem)
-registerItem("block", new WrapItem("list-ol", "Wrap in ordered list", "ordered_list"))
-registerItem("block", new WrapItem("list-ul", "Wrap in bullet list", "bullet_list"))
 registerItem("block", new WrapItem("quote", "Wrap in blockquote", "blockquote"))
-registerItem("block", new InsertBlockItem("hr", "Insert horizontal rule", "horizontal_rule"))
-registerItem("block", new JoinItem)
+
+//registerItem("block", new InsertBlockItem("hr", "Insert horizontal rule", "horizontal_rule"))
+
+registerItem("list", new WrapItem("list-ol", "Wrap in ordered list", "ordered_list"))
+registerItem("list", new WrapItem("list-ul", "Wrap in bullet list", "bullet_list"))
+registerItem("list", new LiftItem)
+registerItem("list", new JoinItem)
 
 registerItem("history", new HistorySeparator)
 registerItem("history", new UndoItem)
