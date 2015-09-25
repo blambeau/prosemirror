@@ -31,6 +31,7 @@
     "browsertests": "watchify -d --outfile demo/test-built.js -t babelify demo/test.js",
     "dist": "babel -d dist src",
     "dist-watch": "babel -w -d dist src",
-    "lint": "blint --browser --ecmaVersion 6 --forbidSemicolons src"
+    "lint": "blint --browser --ecmaVersion 6 --forbidSemicolons src",
+    "docemate": "watchify -d --outfile pkg/prosemirror.js --standalone ProseMirror dist/docemate.js"
   }
 }
