@@ -33,9 +33,42 @@ export function cmpStr(a, b, comment) {
     throw new Failure("expected " + bs + ", got " + as + (comment ? " (" + comment + ")" : ""))
 }
 
+export function cmpObj(a, b, comment) {
+  if (typeof(a) !== typeof(b))
+    throw new Failure("expected " + b + ", got " + a + (comment ? " (" + comment + ")" : ""))
+  cmpArr(Object.keys(a), Object.keys(b), comment)
+  for (let k in a) {
+    cmpEql(a[k], b[k], comment)
+  }
+}
+
+export function cmpArr(a, b, comment) {
+  if (typeof(a) !== typeof(b))
+    throw new Failure("expected " + b + ", got " + a + (comment ? " (" + comment + ")" : ""))
+  if (a.length !== b.length)
+    throw new Failure("expected " + b + ", got " + a + (comment ? " (" + comment + ")" : ""))
+  for (let i=0; i<a.length; i++) {
+    cmpEql(a[i], b[i], comment)
+  }
+}
+
 export function cmp(a, b, comment) {
   if (a !== b)
     throw new Failure("expected " + b + ", got " + a + (comment ? " (" + comment + ")" : ""))
+}
+
+export function cmpEql(a, b, comment) {
+  if (typeof(a) !== typeof(b))
+    throw new Failure("expected " + b + ", got " + a + (comment ? " (" + comment + ")" : ""))
+  if (typeof(a) === "string") {
+    cmpStr(a, b, comment)
+  } else if (a instanceof Array) {
+    cmpArr(a, b, comment)
+  } else if (typeof(a) === 'object') {
+    cmpObj(a, b, comment)
+  } else {
+    cmp(a, b, comment)
+  }
 }
 
 export function gt(a, b, comment) {

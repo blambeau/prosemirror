@@ -1,5 +1,7 @@
 import "./convert/from_markdown"
 import "./convert/to_markdown"
+import "./convert/from_jsonml"
+import "./convert/to_jsonml"
 import "./convert/from_text"
 import "./convert/to_text"
 import "./menu/docebar"
