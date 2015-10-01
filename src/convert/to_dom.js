@@ -195,3 +195,9 @@ renderStyle.link = style => {
   if (style.title) dom.setAttribute("title", style.title)
   return dom
 }
+
+renderStyle.tag = style => {
+  let dom = elt("span")
+  dom.setAttribute("dem-tag", style.expr)
+  return dom
+}

@@ -6,7 +6,11 @@ export function link(href, title) {
   return {type: "link", href: href, title: title || null}
 }
 
-export const ordering = ["em", "strong", "link", "code"]
+export function tag(expr) {
+  return {type: "tag", expr: expr}
+}
+
+export const ordering = ["em", "strong", "link", "code", "tag"]
 
 export function add(styles, style) {
   var order = ordering.indexOf(style.type)

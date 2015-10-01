@@ -75,6 +75,7 @@ export let strong = buildInline(style.strong)
 export let code = buildInline(style.code)
 export let a = buildInline(style.link("http://foo"))
 export let a2 = buildInline(style.link("http://bar"))
+export let tag = buildInline(style.tag("who.name"))
 export let br = {type: "insert", style: "hard_break"}
 export const dataImage = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
 export let img = {type: "insert", style: "image", attrs: {src: dataImage, alt: "x"}}

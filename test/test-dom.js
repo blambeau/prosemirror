@@ -1,4 +1,4 @@
-import {doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, a2, br, hr} from "./build"
+import {doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, a2, br, hr, tag} from "./build"
 import {Failure} from "./failure"
 import {cmpNode} from "./cmp"
 import {defTest} from "./tests"
@@ -77,6 +77,10 @@ t("inline_code",
 t("code_block",
   doc(blockquote(pre("some code")), p("and")),
   "<blockquote><pre><code>some code</code></pre></blockquote><p>and</p>")
+
+t("tag",
+  doc(p("hi", tag("docemate"), "!")),
+  "<p>hi<span dem-tag=\"who.name\">docemate</span>!</p>")
 
 function recover(name, html, doc) {
   defTest("dom_recover_" + name, () => cmpNode(fromDOM(domFor(html)), doc))

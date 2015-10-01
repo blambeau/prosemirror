@@ -207,3 +207,12 @@ tags.img = (dom, context) => {
                alt: dom.getAttribute("alt") || null}
   context.insert(new Span("image", attrs))
 }
+
+tags.span = (dom, context) => {
+  let expr = dom.getAttribute("dem-tag")
+  if (expr) {
+    inline(dom, context, style.tag(expr))
+  } else {
+    context.addAll(dom.firstChild, null)
+  }
+}
