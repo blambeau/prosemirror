@@ -125,7 +125,6 @@ export class SetBlockTypeItem extends IconItem {
   constructor(icon, title, type) {
     super(icon, title)
     this.type = type
-    this.node = new Node(type)
   }
   active(pm) {
     let sel = pm.selection
@@ -133,8 +132,8 @@ export class SetBlockTypeItem extends IconItem {
       pm.doc.path(sel.head.path).type.name == this.type
   }
   apply(pm) {
-    let sel = pm.selection
-    pm.apply(pm.tr.setBlockType(sel.from, sel.to, this.node))
+    let sel = pm.selection, node = pm.schema.node(this.type)
+    pm.apply(pm.tr.setBlockType(sel.from, sel.to, node))
   }
 }
 
@@ -153,7 +152,8 @@ export class SetHeadingItem extends IconItem {
   apply(pm) {
     let sel = pm.selection, node = pm.doc.path(sel.head.path)
     let level = this.isHeadingSel(pm, sel) ? node.attrs.level%6 + 1 : 1
-    pm.apply(pm.tr.setBlockType(sel.from, sel.to, new Node("heading", { level: level })))
+    let nnode = pm.schema.node("heading", { level: level })
+    pm.apply(pm.tr.setBlockType(sel.from, sel.to, nnode))
   }
   render(menu) {
     let sel = menu.pm.selection, node, level

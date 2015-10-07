@@ -3,6 +3,7 @@ import {Failure} from "./failure"
 import {defTest} from "./tests"
 import {cmpNode,cmpArr} from "./cmp"
 
+import {defaultSchema as schema} from "../src/model"
 import {toJsonML} from "../src/convert/to_jsonml"
 import {fromJsonML} from "../src/convert/from_jsonml"
 
@@ -10,7 +11,7 @@ import util from 'util'
 
 function tfrom(name, doc, dom) {
   defTest("jsonml_from_" + name, () => {
-    cmpNode(doc, fromJsonML(dom))
+    cmpNode(doc, fromJsonML(schema, dom))
   })
 }
 
@@ -18,17 +19,17 @@ function t(name, doc, dom) {
   defTest("jsonml_" + name, () => {
     let toml = toJsonML(doc)
     cmpArr(dom, toml, "\n" + util.inspect(dom, false, null) + "\nvs.\n" + util.inspect(toml, false, null))
-    let fromml = fromJsonML(toml)
+    let fromml = fromJsonML(schema, toml)
     cmpNode(doc, fromml)
   })
 }
 
-let adoc = doc(p("hi", tag("docemate"), "!"))
-console.log(util.inspect(adoc, false, null))
+// let adoc = doc(p("hi", tag("docemate"), "!"))
+// console.log(util.inspect(adoc, false, null))
 
 t("empty",
-  doc(),
-  ["article"])
+  doc(p("")),
+  ["article", ["p"]])
 
 t("simple",
   doc(p("hello")),
@@ -82,23 +83,23 @@ t("headings",
   doc(h1("one"), h2("two"), p("text")),
   ["article", ["h1", "one"], ["h2", "two"], ["p", "text"]])
 
-t("tag",
-  doc(p("hi", tag("docemate"), "!")),
-  ["article",["p","hi",["$",{expr: "who.name"},"docemate"],"!"]])
+// t("tag",
+//   doc(p("hi", tag("docemate"), "!")),
+//   ["article",["p","hi",["$",{expr: "who.name"},"docemate"],"!"]])
 
-t("emptyTag",
-  doc(p("hi", tag("who.name"), "!")),
-  ["article",["p","hi",["$",{expr: "who.name"},"who.name"],"!"]])
+// t("emptyTag",
+//   doc(p("hi", tag("who.name"), "!")),
+//   ["article",["p","hi",["$",{expr: "who.name"},"who.name"],"!"]])
 
 //
 
-tfrom("tag",
-  doc(p("hi", tag("who.name"), "!")),
-  ["article",["p","hi",["$",{expr: "who.name"}],"!"]])
+// tfrom("tag",
+//   doc(p("hi", tag("who.name"), "!")),
+//   ["article",["p","hi",["$",{expr: "who.name"}],"!"]])
 
-tfrom("immediateTag",
-  doc(p(tag("who.name"))),
-  ["article",["$",{expr: "who.name"}]])
+// tfrom("immediateTag",
+//   doc(p(tag("who.name"))),
+//   ["article",["$",{expr: "who.name"}]])
 
 tfrom("span",
   doc(p("hello")),

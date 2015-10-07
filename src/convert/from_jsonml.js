@@ -1,15 +1,56 @@
-import {Node, Span, Pos, style} from "../model"
+import {Pos, style} from "../model"
 import {defineSource} from "./index"
 
-export function fromJsonML(jml) {
-  let state = new State()
+export function fromJsonML(schema, jml) {
+  let state = new State(schema), doc
   apply(jml, state)
-  return state.stack[0]
+  do { doc = closeNode(state) } while (state.stack.length)
+  if (!Pos.start(doc)) doc = doc.splice(0, 0, [schema.node("paragraph")])
+  return doc
 }
 
 defineSource("jsonml", fromJsonML)
 
-const tokens = Object.create(null)
+///
+
+function addNode(state, type, attrs, content) {
+  let node = state.schema.node(type, attrs, content)
+  state.push(node)
+  return node
+}
+
+function openNode(state, type, attrs) {
+  state.stack.push({type: type, attrs: attrs, content: []})
+}
+
+function closeNode(state) {
+  if (state.styles.length) state.styles = []
+  let info = state.stack.pop()
+  return addNode(state, info.type, info.attrs, info.content)
+}
+
+function openInline(state, add) {
+  state.styles = style.add(state.styles, add)
+}
+
+function closeInline(state, rm) {
+  state.styles = style.remove(state.styles, rm)
+}
+
+function addInline(state, type, text = null, attrs = null) {
+  let node = state.schema.node(type, attrs, text, state.styles)
+  state.push(node)
+  return node
+}
+
+function addText(state, text) {
+  let nodes = state.top().content, last = nodes[nodes.length - 1]
+  let node = state.schema.text(text, state.styles), merged
+  if (last && (merged = last.maybeMerge(node))) nodes[nodes.length - 1] = merged
+  else nodes.push(node)
+}
+
+///
 
 function apply(jml, state) {
   let renderer = (typeof(jml) === "string") ? "string" : jml[0]
@@ -25,10 +66,14 @@ function applyChildren(jml, state) {
 }
 
 function pushAndApplyChildren(tag, jml, state) {
-  state.open(tag)
+  openNode(state, tag)
   applyChildren(jml, state)
-  state.close()
+  closeNode(state)
 }
+
+///
+
+const tokens = Object.create(null)
 
 tokens.article    = (jml, state) => applyChildren(jml, state)
 tokens.section    = (jml, state) => applyChildren(jml, state)
@@ -39,20 +84,26 @@ tokens.ol         = (jml, state) => pushAndApplyChildren("ordered_list", jml, st
 tokens.li         = (jml, state) => pushAndApplyChildren("list_item", jml, state)
 tokens.blockquote = (jml, state) => pushAndApplyChildren("blockquote", jml, state)
 tokens.pre        = (jml, state) => pushAndApplyChildren("code_block", jml, state)
-tokens.string     = (jml, state) => state.pushSpan("text", {}, [], jml)
-tokens.br         = (jml, state) => state.pushSpan("hard_break")
+tokens.string     = (jml, state) => addText(state, jml)
+tokens.br         = (jml, state) => addInline(state, "hard_break")
 
 tokens.h1 = tokens.h2 = tokens.h3 = tokens.h4 = tokens.h5 = tokens.h6 = function(jml, state) {
-  state.open("heading", { level: Number(jml[0].substring(1)) })
+  openNode(state, "heading", { level: Number(jml[0].substring(1)) })
   applyChildren(jml, state)
-  state.close()
+  closeNode(state)
+}
+
+tokens.$ = (jml, state) => {
+  let expr = jsonml.getAttribute(jml, "expr")
+  addText(state, "${" + expr + "}")
 }
 
 function applyStyle(style, onEmpty = "") {
   return function(jml, state) {
     let sty = (typeof(style) === 'function') ? style(jml) : style
+    openInline(state, sty)
     applyChildren(jml, state)
-    state.applyStyle(sty, jsonml.childCount(jml))
+    closeInline(state, sty)
   }
 }
 
@@ -60,23 +111,12 @@ tokens.em     = applyStyle(style.em)
 tokens.strong = applyStyle(style.strong)
 tokens.code   = applyStyle(style.code)
 tokens.a      = applyStyle((jml) => style.link(jsonml.getAttribute(jml,"href"),jsonml.getAttribute(jml,"title")))
-tokens.$      = (jml,state) => {
-  let expr = jsonml.getAttribute(jml, "expr")
-  let sty = style.tag(expr)
-  if (jsonml.isEmpty(jml)) {
-    state.aboutToText(() => {
-      state.pushSpan("text", {}, [], expr)
-      state.applyStyle(sty, 1)
-    })
-  } else {
-    applyChildren(jml, state)
-    state.applyStyle(sty, jsonml.childCount(jml))
-  }
-}
 
 class State {
-  constructor() {
-    this.stack = [ new Node("doc") ]
+  constructor(schema) {
+    this.schema = schema
+    this.stack = [ {type: "doc", content: []} ]
+    this.styles = [ ]
   }
 
   top() {
@@ -84,41 +124,8 @@ class State {
   }
 
   push(node) {
-    this.top().push(node)
-  }
-
-  pushSpan(type, attrs = {}, styles = [], text = null) {
-    let span = new Span(type, attrs, styles, text)
-    this.push(span)
-  }
-
-  aboutToText(callback) {
-    let top = this.top()
-    if (top.type.contains !== 'span') {
-      this.open(top.type.contains === "list_item" ? "list_item" : "paragraph")
-      callback()
-      this.close()
-    } else {
-      callback()
-    }
-  }
-
-  open(kind, attrs = null) {
-    let child = new Node(kind, attrs)
-    this.push(child)
-    this.stack.push(child)
-  }
-
-  close() {
-    this.stack.pop()
-  }
-
-  applyStyle(sty, count) {
-    let content = this.top().content, last
-    for (let i=1; i<=count; i++) {
-      last = content[content.length-i]
-      last.styles = style.add(last.styles, sty)
-    }
+    if (this.stack.length)
+      this.top().content.push(node)
   }
 }
 // Some JsonML utilities

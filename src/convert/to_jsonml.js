@@ -26,7 +26,8 @@ function renderNode(node, state) {
 function renderBlock(tag) {
   return function(node, state) {
     state.open([ typeof(tag) === 'function' ? tag(node) : tag ])
-    renderNodesInto(node.content, state)
+    if (node.content)
+      renderNodesInto(node.content, state)
     state.close()
   }
 }
