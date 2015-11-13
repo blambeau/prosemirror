@@ -30,7 +30,8 @@ export const defaultKeymap = new Keymap({
   [mod + "H '6'"]: "makeH6",
   [mod + "P"]: "makeParagraph",
   [mod + "\\"]: "makeCodeBlock",
-  [mod + "Space"]: "insertRule"
+  [mod + "Space"]: "insertRule",
+  [mod + "S"]: "save"
 })
 
 function add(key, val) { defaultKeymap.addBinding(key, val) }

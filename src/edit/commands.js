@@ -272,3 +272,8 @@ function insertOpaqueBlock(pm, type, attrs) {
 }
 
 commands.insertRule = pm => insertOpaqueBlock(pm, "horizontal_rule")
+
+commands.save = pm => {
+  if (pm.save)
+    pm.save(pm)
+}
